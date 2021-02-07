@@ -8,6 +8,7 @@ punto::punto(int posX, int posY, int matriz){
     this->posYant = posY;
     this->matrizActual = matriz;
     this->matrizAnt = matriz;
+    this->creado = false;
 }
 
 punto::~punto(){

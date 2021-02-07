@@ -7,7 +7,10 @@ snake::snake(){
     this->direccion = 4;
     this->matrizActual  = 0;
     this->matrizAnt = 0;
-    this->creado = true;
+    this->creado = false;
+    this->posXant = 0;
+    this->posYant = 0;
+    this->tamano = 1;
 }
 
 snake::~snake(){
