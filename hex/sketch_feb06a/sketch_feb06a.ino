@@ -56,12 +56,12 @@ void setup() {
     //Limpiar la matriz
     lc.clearDisplay(i);    
   }
-  lc.setLed(0,0,1,true);
+  lc.setLed(0,0,3,true);
   cabeza.creado = true;
-  cabeza.posX = 1;
+  cabeza.posX = 3;
   cabeza.posY = 0;
   cabeza.matrizActual = 0;
-  cabeza.posXant = 0;
+  cabeza.posXant = 2;
   cabeza.posYant = 0;
   cabeza.matrizAnt = 0;
   cabeza.tamano = 2;
@@ -115,12 +115,18 @@ void actualizarPosicion(){
       cabeza.posY--;
       cabeza.posXant = cabeza.posX;
       cabeza.matrizAnt = cabeza.matrizActual;
+      if (cabeza.posY < 0){
+        //Pierde
+      }
       break;
     case 2:
       cabeza.posYant = cabeza.posY;
       cabeza.posY++;
       cabeza.posXant = cabeza.posX;
       cabeza.matrizAnt = cabeza.matrizActual;
+      if (cabeza.posY > 7){
+        //Pierde
+      }
       break;
     case 3:
       cabeza.posXant = cabeza.posX;
@@ -192,15 +198,46 @@ void mover(){
 void crearSector(){
   Serial.println("Creando sector");
   snake nSector;
+  snake nSector1;
+  snake nSector2;
+
+  
   nSector.creado = true;
-  nSector.posX = ultimaPosX;
-  nSector.posY = ultimaPosY;
-  nSector.matrizActual = ultimaMatriz;
+  nSector.posX = 2;
+  nSector.posY = 0;
+  nSector.matrizActual = 0;
+  nSector.posXant = 1;
+  nSector.posYant = 0;
+  nSector.matrizAnt = 0;
+
+  
+  nSector1.creado = true;
+  nSector1.posX = 1;
+  nSector1.posY = 0;
+  nSector1.matrizActual = 0;
+  nSector1.posXant = 0;
+  nSector1.posYant = 0;
+  nSector1.matrizAnt = 0;
+
+  
+  nSector2.creado = true;
+  nSector2.posX = 0;
+  nSector2.posY = 0;
+  nSector2.matrizActual = 0;
+  nSector2.posXant = 0;
+  nSector2.posYant = 0;
+  nSector2.matrizAnt = 0;
+
+  
   delete matriz[1];
   matriz[1]=&nSector;
+  matriz[2]=&nSector1;
+  matriz[3]=&nSector2;
   snake vacio;
-  matriz[2]=&vacio;
+  matriz[4]=&vacio;
   lc.setLed(0,0,0,true);
+  lc.setLed(0,0,1,true);
+  lc.setLed(0,0,2,true);
   delay(delaytime);
   cabeza.tamano++;
 }
