@@ -28,7 +28,19 @@ int snakePosY = 0;
 //Estado de matriz
 int numMatriz = 0;
 
+//clase de la comida //JAVIER
+struct Point {//JAVIER
+  int row = 0, col = 0, matriz =0;//JAVIER
+  Point(int row = 0, int col = 0,int matriz = 0): row(row), col(col), matriz(matriz) {}//JAVIER
+};//JAVIER
+
+
+//declaro el 1.er objeto comida //JAVIER
+Point food(-1, -1,-1);//JAVIER
+
 void setup() { 
+
+  Serial.begin(9600);
 
   //Inicializando los pines de los botones como entradas
   pinMode(butPinUp, INPUT);
@@ -49,10 +61,28 @@ void setup() {
     lc.clearDisplay(i);    
   }
   lc.setLed(0,0,0,true);
+
+  
+  // declaro la comida 1.era vez //JAVIER
+
+ /* int row = random(8);//JAVIER
+  int col = random(1,7);//JAVIER
+  int matrix = random(2);//JAVIER
+  
+  food.row = row;//JAVIER
+  food.col = col;//JAVIER
+  food.matriz = matrix;//JAVIER
+
+  Serial.println(food.row);//JAVIER
+  Serial.println(food.col);//JAVIER
+  Serial.println(food.matriz);//JAVIER
+  Serial.println("------------------------");//JAVIER
+  */
+  
 }
 
 void loop() {
-  generateFood();
+  generateFood();//JAVIER
 
   //Leer los estados de los botones
   butUpState = digitalRead(butPinUp);
@@ -172,35 +202,48 @@ void actualizarPosSnake(int horientacion){
 //*************************************************************************************************************************************************************************************************************
 
 int puntos =0;
-const short messageSpeed = 5;
+bool gameOver = false;
 
-//clase de la comida
-struct Point {
-  int row = 0, col = 0, matriz =0;
-  Point(int row = 0, int col = 0,int matriz = 0): row(row), col(col), matriz(matriz) {}
-};
+const short messageSpeed = 0; // default era 5, pero le baje con el fin de que sean mas rapidos los mensajes de game over y score
 
 
-// declaro la comida
-Point food(-1, -1,-1);
 
-// if there is no food, generate one, also check for victory
+
+// if there is no food, generate one, also check for lose
 
 void generateFood() {
       delay(100);
+      
+      //aqui estaba
+      if(gameOver == false){
+      lc.setLed(food.matriz,food.row, food.col,true);
+      }else{
+        return;
+        }
 
 // ver si cuadran la posicion de la serpiente con la de la comida (por ahora)
   if (food.row == -1 || food.col == -1||food.matriz==-1) { 
-    food.col = random(8);//asigno col a comida
+    food.col = random(1,7);//asigno col a comida
     food.row = random(8);//asigno fila a comida
     food.matriz = random(2);//asigno matrz a comida
     lc.setLed(food.matriz,food.row, food.col,true);
 
+
+  Serial.println(food.row);
+  Serial.println(food.col);
+  Serial.println(food.matriz);
+  Serial.println("------------------------");
+
     //AQUI PUEDE IR EL +1 AL PUNTEO
+    
 
   }else if(snakePosX == food.col && snakePosY ==food.row && numMatriz==food.matriz){ //si la cabeza se come la comida 
         food.col = -1;
         food.row = -1;
+        puntos+=1;
+        Serial.print(">>>puntos:");
+        Serial.print(puntos);
+        Serial.println();
     }
 
   
@@ -220,9 +263,125 @@ const PROGMEM bool gameOverMessage[8][90] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+const PROGMEM bool scoreMessage[8][58] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+const PROGMEM bool digits[][8][8] = {
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 1, 1, 1, 0},
+    {0, 1, 1, 1, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 1, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0},
+    {0, 0, 1, 1, 0, 0, 0, 0},
+    {0, 1, 1, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 0, 0, 1, 1, 1, 0, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0},
+    {0, 0, 0, 1, 1, 1, 0, 0},
+    {0, 0, 1, 0, 1, 1, 0, 0},
+    {0, 1, 0, 0, 1, 1, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 1, 1, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 0, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0},
+    {0, 0, 0, 0, 1, 1, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0},
+    {0, 0, 0, 1, 1, 0, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  },
+  {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 1, 0},
+    {0, 0, 0, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 1, 1, 0},
+    {0, 0, 1, 1, 1, 1, 0, 0}
+  }
+};
+
 void showGameOverMessage() {
   [&] {
     int numMat=1; //****
+    gameOver = true;
+    
     for (int d = 0; d < sizeof(gameOverMessage[0]) - 7; d++) {
       
       for (int col = 0; col < 8; col++) {
@@ -231,15 +390,85 @@ void showGameOverMessage() {
         for (int row = 0; row < 8; row++) {
           
           // this reads the byte from the PROGMEM and displays it on the screen
-          lc.setLed(numMat, row, col, pgm_read_byte(&(gameOverMessage[row][col + d]))); //****
+          lc.setLed(1, row, col, pgm_read_byte(&(gameOverMessage[row][col + d]))); //****
+          lc.setLed(0, row, col, pgm_read_byte(&(gameOverMessage[row][col-7 + d]))); //****
+          
         }
       }
 
+    }
+    showScoreMessage(puntos);//AQUI MUESTRO EL SCORE LUEGO Q SE DESPLEGUE GAME OVER
+    //reset de puntos
+    puntos=0;
+  }();
+  
+  lc.setLed(food.matriz,food.row, food.col,false);// RECORDAR CUANDO SE RESETEE LA PARTIDA SE DEBE DE INICIALUZAR NUEVAMENTE LA COMIDA
+  lc.clearDisplay(0);
+  lc.clearDisplay(1);
+
+
+}
+
+
+// scrolls the 'score' message with numbers around the matrix
+void showScoreMessage(int score) {
+  if (score < 0 || score > 99) return;
+
+  // specify score digits
+  int second = score % 10;
+  int first = (score / 10) % 10;
+
+  [&] {
+    for (int d = 0; d < sizeof(scoreMessage[0]) + 2 * sizeof(digits[0][0]); d++) {
+      for (int col = 0; col < 8; col++) {
+        delay(messageSpeed);
+        for (int row = 0; row < 8; row++) {
+          if (d <= sizeof(scoreMessage[0]) - 8) {
+            lc.setLed(1, row, col, pgm_read_byte(&(scoreMessage[row][col + d])));
+            lc.setLed(0, row, col, pgm_read_byte(&(scoreMessage[row][col-7 + d]))); //****
+          }
+
+          int c = col + d - sizeof(scoreMessage[0]) + 6; // move 6 px in front of the previous message
+
+          // if the score is < 10, shift out the first digit (zero)
+          if (score < 10) c += 8;
+
+          if (c >= 0 && c < 8) {
+            if (first > 0) {
+              lc.setLed(1, row, col, pgm_read_byte(&(digits[first][row][c]))); 
+             // lc.setLed(0, row, col, pgm_read_byte(&(digits[first][row][c]))); //****
+            
+            }// show only if score is >= 10 (see above)
+          } else {
+            c -= 8;
+            if (c >= 0 && c < 8) {
+              lc.setLed(1, row, col, pgm_read_byte(&(digits[second][row][c]))); // show always
+              //lc.setLed(0, row, col, pgm_read_byte(&(digits[second][row][c]))); //****
+              
+            }
+          }
+        }
+      }
+
+/*  //CREO Q HAY Q VALIDAR Q NO SE MUEVA LA SERPIENTE EN ESTOS 2 TIPOS DE MENSAJES
+      // if the joystick is moved, exit the message
+      if (analogRead(Pin::joystickY) < joystickHome.y - joystickThreshold
+              || analogRead(Pin::joystickY) > joystickHome.y + joystickThreshold
+              || analogRead(Pin::joystickX) < joystickHome.x - joystickThreshold
+              || analogRead(Pin::joystickX) > joystickHome.x + joystickThreshold) {
+        return; // return the lambda function
+      }*/
     }
   }();
 
   lc.clearDisplay(0);
   lc.clearDisplay(1);
 
+
+  //  // wait for joystick co come back
+  //  while (analogRead(Pin::joystickY) < joystickHome.y - joystickThreshold
+  //          || analogRead(Pin::joystickY) > joystickHome.y + joystickThreshold
+  //          || analogRead(Pin::joystickX) < joystickHome.x - joystickThreshold
+  //          || analogRead(Pin::joystickX) > joystickHome.x + joystickThreshold) {}
 
 }
