@@ -38,10 +38,20 @@ struct Point {//JAVIER
 //declaro el 1.er objeto comida //JAVIER
 Point food(-1, -1,-1);//JAVIER
 
+
+int special = 8;//JAVIER
+int specialState =0;//JAVIER
+
+//nuevas variables para medir tiempo no tocar
+unsigned long duration;//JAVIER
+long tiempoJavier =0;//JAVIER
+bool pausabool =false;//JAVIER
+bool gameOver =false;//Javier
+
 void setup() { 
 
   Serial.begin(9600);
-
+  
   //Inicializando los pines de los botones como entradas
   pinMode(butPinUp, INPUT);
   pinMode(butPinDown,INPUT);
@@ -62,27 +72,17 @@ void setup() {
   }
   lc.setLed(0,0,0,true);
 
-  
-  // declaro la comida 1.era vez //JAVIER
+ 
 
- /* int row = random(8);//JAVIER
-  int col = random(1,7);//JAVIER
-  int matrix = random(2);//JAVIER
-  
-  food.row = row;//JAVIER
-  food.col = col;//JAVIER
-  food.matriz = matrix;//JAVIER
-
-  Serial.println(food.row);//JAVIER
-  Serial.println(food.col);//JAVIER
-  Serial.println(food.matriz);//JAVIER
-  Serial.println("------------------------");//JAVIER
-  */
+  // pulso de buttom
+  pinMode(special, INPUT);//JAVIER
   
 }
 
 void loop() {
   generateFood();//JAVIER
+
+  specialState = digitalRead(special);//JAVIER para el boton de START
 
   //Leer los estados de los botones
   butUpState = digitalRead(butPinUp);
@@ -91,26 +91,64 @@ void loop() {
   butRightState = digitalRead(butPinRight);
 
   //Comportamiento de los botones
-  if (butUpState == HIGH){
+  if (butUpState == HIGH && pausabool==false && gameOver ==false){//JAVIER para q cuando entre en pause no se mueva la serpiente coloque la nueva condicion
     //Se enciende el led
     digitalWrite(ledPin,HIGH);
     snakePosY-=1;
     actualizarPosSnake(1);
-  }else if (butDownState){
+  }else if (butDownState && pausabool==false && gameOver ==false){//JAVIER para q cuando entre en pause no se mueva la serpiente coloque la nueva condicion
     digitalWrite(ledPin,HIGH);
     snakePosY+=1;
     actualizarPosSnake(2);
-  }else if (butLeftState){
+  }else if (butLeftState && pausabool==false && gameOver ==false){//JAVIER para q cuando entre en pause no se mueva la serpiente coloque la nueva condicion
     digitalWrite(ledPin,HIGH);
     snakePosX-=1;
     actualizarPosSnake(3);
-  }else if (butRightState){
+  }else if (butRightState && pausabool==false && gameOver ==false){//JAVIER para q cuando entre en pause no se mueva la serpiente coloque la nueva condicion
     digitalWrite(ledPin,HIGH);
     snakePosX+=1;
     actualizarPosSnake(4);
+    
+  }else if(specialState == HIGH){//JAVIER si START FUE PRECIONADO tengo q calcular si es pause o endgame su funcion es la de contar el n numero de seg de presion
+    duration = pulseIn(special,HIGH);//JAVIER
+    
+    if(duration==0){//JAVIER
+      tiempoJavier+=1;//JAVIER
+      Serial.println(tiempoJavier);//JAVIER
+    }//JAVIER
+  
   }else{
     //Se mantiene apagado el led
     digitalWrite(ledPin,LOW);
+
+  if(tiempoJavier==1){//JAVIER aqui valido el n numero de segundos q calcule anterior
+    
+    pausabool = !pausabool;//JAVIER cambio de estado automaticamente si es pausa
+    pausa();//JAVIER llamo al metodo de desplique de mensaje de score o que reanima el juego
+    tiempoJavier=0;//JAVIER
+    return;//JAVIER
+    
+    }else if(tiempoJavier>=3){//JAVIER
+    Serial.println("modo EXIT");//JAVIER  *******************MODO EXIT
+    tiempoJavier=0;//JAVIER
+    showGameOverMessage();//AQUI VAN EL GAME OVER///////JAVIER
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>       AQUI TIENE Q HABER ALGO PARA REGRESAR AL MODO "MENU" Y AL EMPEZAR OTRA PARTIDA RESETEAR:
+/*
+
+Point food(-1, -1,-1);//JAVIER
+specialState =0;//JAVIER
+duration=0;//JAVIER
+tiempoJavier =0;//JAVIER
+pausabool =false;//JAVIER
+gameOver =false;//Javier
+
+*/
+    
+    return;//JAVIER
+    }//JAVIER
+    
+    //tiempoJavier=0;
   }
 
  
@@ -202,12 +240,8 @@ void actualizarPosSnake(int horientacion){
 //*************************************************************************************************************************************************************************************************************
 
 int puntos =0;
-bool gameOver = false;
 
 const short messageSpeed = 0; // default era 5, pero le baje con el fin de que sean mas rapidos los mensajes de game over y score
-
-
-
 
 // if there is no food, generate one, also check for lose
 
@@ -215,7 +249,7 @@ void generateFood() {
       delay(100);
       
       //aqui estaba
-      if(gameOver == false){
+      if(gameOver == false && pausabool==false){
       lc.setLed(food.matriz,food.row, food.col,true);
       }else{
         return;
@@ -380,6 +414,7 @@ const PROGMEM bool digits[][8][8] = {
 void showGameOverMessage() {
   [&] {
     int numMat=1; //****
+    
     gameOver = true;
     
     for (int d = 0; d < sizeof(gameOverMessage[0]) - 7; d++) {
@@ -470,5 +505,26 @@ void showScoreMessage(int score) {
   //          || analogRead(Pin::joystickY) > joystickHome.y + joystickThreshold
   //          || analogRead(Pin::joystickX) < joystickHome.x - joystickThreshold
   //          || analogRead(Pin::joystickX) > joystickHome.x + joystickThreshold) {}
+
+}
+
+
+//***********************************************************************
+
+//METODO PARA PAUSA NECESITA DE UN BOOL LLAMADO pausabool si es true entra en pausa y apago la comida como la cabeza he imprimo el score actual.// si pausabool es false reactivo la comida como el led de la cabeza de la snake
+void pausa(){
+
+  if(pausabool==true){
+    Serial.println("modo PAUSA ON");//JAVIER  *******************MODO PAUSA on
+      lc.setLed(food.matriz,food.row, food.col,false);//PARA QUE NO SE MIRE LA COMIDA
+      lc.setLed(numMatriz,snakePosY,snakePosX,false);//PARA Q NO SE MIRE LA SNAKE
+      showScoreMessage(puntos);//AQUI MUESTRO EL SCORE LUEGO Q entre en modo pausa   
+  
+    }else{
+      //CUANDO SE QUITE EL MODO PAUSA SE TIENE Q VER DE NUEVO LA COMIDA Y LA SERPIENTE
+      Serial.println("modo PAUSA OFF");//JAVIER  *******************MODO PAUSA off
+      lc.setLed(food.matriz,food.row, food.col,true);//PARA QUE SE MIRE LA COMIDA
+      lc.setLed(numMatriz,snakePosY,snakePosX,true);//PARA Q SE MIRE LA SNAKE
+      }  
 
 }
