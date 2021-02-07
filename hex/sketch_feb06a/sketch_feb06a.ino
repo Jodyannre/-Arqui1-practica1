@@ -32,7 +32,21 @@ snake cabeza;
 snake sector;
 snake* matriz[129];
 
+//Comida
+//clase de la comida 
+struct Point {
+  int row = 0, col = 0, matriz =0;
+  Point(int row = 0, int col = 0,int matriz = 0): row(row), col(col), matriz(matriz) {}
+};
 
+//Variables de estados del juego
+int puntos = 0;
+bool gameOver = false;
+bool snakeCrecio = false;
+
+
+//declaro el 1.er objeto comida //JAVIER
+Point food(-1, -1,-1);//JAVIER
 
 
 
@@ -56,15 +70,9 @@ void setup() {
     //Limpiar la matriz
     lc.clearDisplay(i);    
   }
-  lc.setLed(0,0,3,true);
-  cabeza.creado = true;
-  cabeza.posX = 3;
-  cabeza.posY = 0;
-  cabeza.matrizActual = 0;
-  cabeza.posXant = 2;
-  cabeza.posYant = 0;
-  cabeza.matrizAnt = 0;
-  cabeza.tamano = 2;
+  generarPosicionInicial();
+  generateFood();
+  lc.setLed(cabeza.matrizActual,cabeza.posY,cabeza.posX,true);
   matriz[0]=&cabeza;
   matriz[1]=&sector;
   delay(delaytime);
@@ -76,14 +84,29 @@ void loop() {
   butDownState = digitalRead(butPinDown);
   butLeftState = digitalRead(butPinLeft);
   butRightState = digitalRead(butPinRight);
-  
   //Actualizar posiciones y pintar la matriz
   actualizarDireccion();
-  if (cabeza.tamano == 2){crearSector();}
+  //if (cabeza.tamano == 2){crearSector();}
   actualizarPosicion();
   buscarUltimoSector();
+  generateFood();
   mover();
 }
+
+
+//Método para inicializar y generar la posición aleatoría de la cabeza de la serpiente
+void generarPosicionInicial(){
+    cabeza.posX = random(1,8);
+    cabeza.posY = random(1,8);
+    cabeza.matrizActual = random(2);
+    cabeza.direccion = random(1,5);
+    cabeza.posXant = cabeza.posX;
+    cabeza.posYant = cabeza.posY;
+    cabeza.matrizAnt = cabeza.matrizActual;
+    cabeza.creado = true;
+    cabeza.tamano = 1;
+}
+
 
 //Método que actualiza la dirección de la snake
 void actualizarDireccion(){
@@ -177,6 +200,9 @@ void buscarUltimoSector(){
         ultimaPosX = matriz[i-1]->posXant;
         ultimaPosY = matriz[i-1]->posYant;
         ultimaMatriz = matriz[i-1]->matrizAnt;
+        if (snakeCrecio){
+          crearSector(i);
+        }
         break;
      }
   }
@@ -189,28 +215,34 @@ void mover(){
   if (cabeza.tamano==1){
     lc.setLed(cabeza.matrizAnt,cabeza.posYant,cabeza.posXant,false);
   }else{
-    lc.setLed(ultimaMatriz,ultimaPosY,ultimaPosX,false);
+    if (snakeCrecio){
+      snakeCrecio = false; //Se vuelve a colocar en false para el próximo movimiento
+    }else{
+      lc.setLed(ultimaMatriz,ultimaPosY,ultimaPosX,false);
+    }
   }
   delay(delaytime);
 }
 
 //Crea nuevos sectores después de encontrar comida
-void crearSector(){
+void crearSector(int posicion){
   Serial.println("Creando sector");
   snake nSector;
+  snake vacio;
+  /*
   snake nSector1;
   snake nSector2;
-
+  */
   
   nSector.creado = true;
-  nSector.posX = 2;
-  nSector.posY = 0;
-  nSector.matrizActual = 0;
-  nSector.posXant = 1;
-  nSector.posYant = 0;
-  nSector.matrizAnt = 0;
+  nSector.posX = ultimaPosX;
+  nSector.posY = ultimaPosY;
+  nSector.matrizActual = ultimaMatriz;
+  nSector.posXant = ultimaPosX;
+  nSector.posYant = ultimaPosY;
+  nSector.matrizAnt = ultimaMatriz;
 
-  
+  /*
   nSector1.creado = true;
   nSector1.posX = 1;
   nSector1.posY = 0;
@@ -227,17 +259,55 @@ void crearSector(){
   nSector2.posXant = 0;
   nSector2.posYant = 0;
   nSector2.matrizAnt = 0;
-
+  */
   
-  delete matriz[1];
-  matriz[1]=&nSector;
-  matriz[2]=&nSector1;
-  matriz[3]=&nSector2;
-  snake vacio;
-  matriz[4]=&vacio;
-  lc.setLed(0,0,0,true);
-  lc.setLed(0,0,1,true);
-  lc.setLed(0,0,2,true);
+  delete matriz[posicion];
+  matriz[posicion]=&nSector;
+  //matriz[2]=&nSector1;
+  //matriz[3]=&nSector2;
+  matriz[posicion+1]=&vacio;
+  //lc.setLed(0,0,0,true);
+  //lc.setLed(0,0,1,true);
+  //lc.setLed(0,0,2,true);
   delay(delaytime);
   cabeza.tamano++;
+}
+
+
+//Método para la generación de la comida
+void generateFood() {
+      delay(100);     
+      if(gameOver == false){
+      lc.setLed(food.matriz,food.row, food.col,true);
+      }else{
+        return;
+        }
+
+// ver si cuadran la posicion de la serpiente con la de la comida (por ahora)
+  if (food.row == -1 || food.col == -1||food.matriz==-1) { 
+    food.col = random(1,7);//asigno col a comida
+    food.row = random(8);//asigno fila a comida
+    food.matriz = random(2);//asigno matrz a comida
+    lc.setLed(food.matriz,food.row, food.col,true);
+
+
+  Serial.println(food.row);
+  Serial.println(food.col);
+  Serial.println(food.matriz);
+  Serial.println("------------------------");
+
+    //AQUI PUEDE IR EL +1 AL PUNTEO
+    
+
+  }else if(cabeza.posX == food.col && cabeza.posY ==food.row && cabeza.matrizActual==food.matriz){ //si la cabeza se come la comida 
+        food.col = -1;
+        food.row = -1;
+        puntos+=1;
+        Serial.print(">>>puntos:");
+        Serial.print(puntos);
+        Serial.println();
+        snakeCrecio = true;
+    }
+
+  
 }
