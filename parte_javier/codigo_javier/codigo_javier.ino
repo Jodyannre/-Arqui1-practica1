@@ -47,6 +47,7 @@ unsigned long duration;//JAVIER
 long tiempoJavier =0;//JAVIER
 bool pausabool =false;//JAVIER
 bool gameOver =false;//Javier
+bool modoPractica =false;
 
 void setup() { 
 
@@ -70,7 +71,9 @@ void setup() {
     //Limpiar la matriz
     lc.clearDisplay(i);    
   }
-  lc.setLed(0,0,0,true);
+  //lc.setLed(0,0,0,true);// posicion inicial de snake JOEL
+
+  Serial.println(">>>>>>>presione START por 3 seg/veces! para iniciar<<<<<<<<)");//JAVIER
 
  
 
@@ -80,6 +83,10 @@ void setup() {
 }
 
 void loop() {
+
+  BIFROST();// sin esto no se puede empesar el juego lo q hace es si start no se oprime por 3 seg o veces no inicial el juego esto mismo se hace despues del game over
+  //modoPractica se habilita en metodo BIFROST
+  if(modoPractica ==true){
   generateFood();//JAVIER
 
   specialState = digitalRead(special);//JAVIER para el boton de START
@@ -151,7 +158,7 @@ gameOver =false;//Javier
     //tiempoJavier=0;
   }
 
- 
+}//entre modos
 }
 
 
@@ -262,10 +269,15 @@ void generateFood() {
     food.matriz = random(2);//asigno matrz a comida
     lc.setLed(food.matriz,food.row, food.col,true);
 
-
-  Serial.println(food.row);
-  Serial.println(food.col);
-  Serial.println(food.matriz);
+  Serial.print("ComidaRow:");
+  Serial.print(food.row);
+  Serial.println("");
+  Serial.print("ComidaCol:");
+  Serial.print(food.col);
+  Serial.println("");
+  Serial.print("ComidaMatriz:");
+  Serial.print(food.matriz);
+  Serial.println("");
   Serial.println("------------------------");
 
     //AQUI PUEDE IR EL +1 AL PUNTEO
@@ -274,6 +286,9 @@ void generateFood() {
   }else if(snakePosX == food.col && snakePosY ==food.row && numMatriz==food.matriz){ //si la cabeza se come la comida 
         food.col = -1;
         food.row = -1;
+        delaytime=delaytime-10;//COMO COMIO LE AUMENTO LA VELOCIDAD
+        Serial.print(">>>velocidad:");
+        Serial.print(delaytime);
         puntos+=1;
         Serial.print(">>>puntos:");
         Serial.print(puntos);
@@ -438,8 +453,10 @@ void showGameOverMessage() {
   }();
   
   lc.setLed(food.matriz,food.row, food.col,false);// RECORDAR CUANDO SE RESETEE LA PARTIDA SE DEBE DE INICIALUZAR NUEVAMENTE LA COMIDA
+  Serial.println(">>>>>>>presione START por 3 seg/veces! para iniciar el juego<<<<<<<<)");//JAVIER
   lc.clearDisplay(0);
   lc.clearDisplay(1);
+  modoPractica =false;
 
 
 }
@@ -528,3 +545,50 @@ void pausa(){
       }  
 
 }
+
+void BIFROST(){
+
+  specialState = digitalRead(special);//JAVIER para el boton de START para saber cuando se esta pulsando
+  
+  if(specialState == HIGH){//JAVIER si START FUE PRECIONADO su funcion es la de contar el n numero de seg de presion
+    duration = pulseIn(special,HIGH);//JAVIER
+    
+    if(duration==0){//JAVIER
+      tiempoJavier+=1;//JAVIER
+      Serial.println(tiempoJavier);//JAVIER
+    }//JAVIER
+
+    if(tiempoJavier>=3){//JAVIER
+    Serial.println("iniciando juego SNAKE.....");//JAVIER  *******************MODO INICIAL
+    tiempoJavier=0;//JAVIER
+
+//restablesco todas las variables nuevamente
+  food.col = -1;
+  food.row = -1;
+  puntos =0;
+  snakePosX = 0;
+  snakePosY = 0;
+  numMatriz = 0;
+  specialState =0;//JAVIER
+  duration=0;//JAVIER
+  tiempoJavier =0;//JAVIER
+  pausabool =false;//JAVIER
+  gameOver =false;//Javier
+
+
+  //hacer ver a la serpiente
+  lc.setLed(0,0,0,true);// posicion inicial de snake JOEL
+
+    //paso de modo de mensaje a modo del juego habilitando el bool
+    modoPractica =true;
+
+
+
+
+    
+    }
+
+  }
+  
+  
+  }
