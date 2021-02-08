@@ -121,14 +121,14 @@ void setup() {
     //Limpiar la matriz
     lc.clearDisplay(i);
   }
-  //Inicialización de componentes
-  generarPosicionInicial();
-  generateFood();
-  longitud = 0;
-  lc.setLed(snake.matriz, snake.y, snake.x, true);
-  cuerpo[0][0] = snake.x;
-  cuerpo[1][0] = snake.y;
-  cuerpo[2][0] = snake.matriz;
+  
+  Serial.println(">>>>>>>presione START por 3 seg/veces! para iniciar<<<<<<<<)");//JAVIER
+  
+
+
+
+
+
   delay(delaytime);
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -156,10 +156,32 @@ void loop() {
     //Actualizar posiciones y pintar la matriz
     actualizarDireccion();
 
+    //Validación de pausa
+
+    if (tiempoJavier == 1) { //JAVIER aqui valido el n numero de segundos q calcule anterior
+
+      pausabool = !pausabool;//JAVIER cambio de estado automaticamente si es pausa
+      pausa();//JAVIER llamo al metodo de desplique de mensaje de score o que reanima el juego
+      tiempoJavier = 0; //JAVIER
+      return;//JAVIER
+
+    } else if (tiempoJavier >= 3) { //JAVIER
+      Serial.println("modo EXIT");//JAVIER  *******************MODO EXIT
+      tiempoJavier = 0; //JAVIER
+      showGameOverMessage();//AQUI VAN EL GAME OVER///////JAVIER
+
+      //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>       AQUI TIENE Q HABER ALGO PARA REGRESAR AL MODO "MENU" Y AL EMPEZAR OTRA PARTIDA RESETEAR:
+      return;//JAVIER
+    }//JAVIER
+    //tiempoJavier=0;
+
+
+    
+
     //Pintar y actualizar posición snake --> si pausa esta activa la serpiente no pinta ni se mueve
-    if (true) { //<-falta condición
+    if (pausabool==false && gameOver ==false) { //<-falta condición
       actualizarPosicion();
-      mover();
+      
     }
 
     //Generar nueva comida
@@ -184,6 +206,9 @@ void generarPosicionInicial() {
   cola.x = snake.x;
   cola.dir = snake.dir;
   cola.matriz = snake.matriz;
+  cuerpo[0][0] = snake.x;
+  cuerpo[1][0] = snake.y;
+  cuerpo[2][0] = snake.matriz;
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -212,26 +237,11 @@ void actualizarDireccion() {
     if (duration == 0) {
       tiempoJavier += 1;
       Serial.println(tiempoJavier);
+      
     }
   } else {
     //Se mantiene apagado el led
     digitalWrite(ledPin, LOW);
-    if (tiempoJavier == 1) { //JAVIER aqui valido el n numero de segundos q calcule anterior
-
-      pausabool = !pausabool;//JAVIER cambio de estado automaticamente si es pausa
-      pausa();//JAVIER llamo al metodo de desplique de mensaje de score o que reanima el juego
-      tiempoJavier = 0; //JAVIER
-      return;//JAVIER
-
-    } else if (tiempoJavier >= 3) { //JAVIER
-      Serial.println("modo EXIT");//JAVIER  *******************MODO EXIT
-      tiempoJavier = 0; //JAVIER
-      showGameOverMessage();//AQUI VAN EL GAME OVER///////JAVIER
-
-      //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>       AQUI TIENE Q HABER ALGO PARA REGRESAR AL MODO "MENU" Y AL EMPEZAR OTRA PARTIDA RESETEAR:
-      return;//JAVIER
-    }//JAVIER
-    //tiempoJavier=0;
   }
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
@@ -306,6 +316,7 @@ void actualizarPosicion() {
   cuerpo[0][0] = snake.x;
   cuerpo[1][0] = snake.y;
   cuerpo[2][0] = snake.matriz;
+  mover();
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
 
@@ -696,18 +707,28 @@ void BIFROST() {
       food.col = -1;
       food.row = -1;
       puntos = 0;
-      snake.x = 0;
-      snake.y = 0;
-      snake.matriz = 1;
+      //snake.x = 0;
+      //snake.y = 0;
+      //snake.matriz = 1;
       specialState = 0; //JAVIER
       duration = 0; //JAVIER
       tiempoJavier = 0; //JAVIER
       pausabool = false; //JAVIER
       gameOver = false; //Javier
 
-
+      //Reiniciando cuerpo de la serpiente
+      for (int i=longitud;i>-1;i--){
+        cuerpo[0][i] = 0; 
+        cuerpo[1][i] = 0;
+        cuerpo[2][i] = 0;
+      }
+      //Generando nueva snake
+      longitud = 0;
+      generarPosicionInicial();
+      
       //hacer ver a la serpiente inicialmente
-      lc.setLed(1, 0, 0, true); // posicion inicial de snake JOEL
+      
+      lc.setLed(snake.matriz, snake.y, snake.x, true); // posicion inicial de snake JOEL
 
       //paso de modo de mensaje a modo del juego habilitando el bool
       modoPractica = true;
