@@ -89,8 +89,9 @@ void loop() {
   //if (cabeza.tamano == 2){crearSector();}
   actualizarPosicion();
   buscarUltimoSector();
-  generateFood();
   mover();
+  generateFood();
+  
 }
 
 
@@ -182,6 +183,12 @@ void actualizarPosicion(){
       }
       break;
   }
+  if (cabeza.posX == food.col && cabeza.posY ==food.row && cabeza.matrizActual==food.matriz){snakeCrecio = true;}
+  Serial.println(cabeza.posX);
+  Serial.println(cabeza.posY);
+  Serial.println(cabeza.posXant);
+  Serial.println(cabeza.posYant);
+  Serial.println("----------------");
 }
 
 
@@ -189,14 +196,45 @@ void actualizarPosicion(){
 void buscarUltimoSector(){
   for (int i=1;i<129;i++){
      if (matriz[i]->creado){
-        Serial.println("Si existe");
+        //Serial.println("Si existe");
         matriz[i]->posXant = matriz[i]->posX;
         matriz[i]->posYant = matriz[i]->posY;
         matriz[i]->matrizAnt = matriz[i]->matrizActual;
         matriz[i]->posX = matriz[i-1]->posXant;
         matriz[i]->posY = matriz[i-1]->posYant;
         matriz[i]->matrizActual = matriz[i-1]->matrizAnt;
+        
+        Serial.println("Matriz ant:");
+        Serial.println(matriz[i]->matrizAnt);
+        Serial.println("Posición en Yant:");
+        Serial.println(matriz[i]->posYant);
+        Serial.println("Posición en Xant:");
+        Serial.println(matriz[i]->posXant);
+        Serial.println("----------------------");
+        Serial.println("----------------------");
+        Serial.println("Matriz:");
+        Serial.println(matriz[i]->matrizActual);
+        Serial.println("Posición en Y:");
+        Serial.println(matriz[i]->posY);
+        Serial.println("Posición en X:");
+        Serial.println(matriz[i]->posX);
+        Serial.println("----------------------");
+        Serial.println("----------------------");
+        /*
+        Serial.println("Posicion revisada");
+        Serial.println(i);
+        Serial.println("Últimas posiciones despues dentro del for");
+        Serial.println(matriz[i]->matrizAnt);
+        Serial.println(matriz[i]->posYant);
+        Serial.println(matriz[i]->posXant);
+        Serial.println("--------------------");
+        */
      }else{
+      /*
+        Serial.println("Posición en la matriz");
+        Serial.println(i);
+        Serial.println("----------------------");
+        */
         ultimaPosX = matriz[i-1]->posXant;
         ultimaPosY = matriz[i-1]->posYant;
         ultimaMatriz = matriz[i-1]->matrizAnt;
@@ -213,7 +251,7 @@ void buscarUltimoSector(){
 void mover(){
   lc.setLed(cabeza.matrizActual,cabeza.posY,cabeza.posX,true);
   if (cabeza.tamano==1){
-    lc.setLed(cabeza.matrizAnt,cabeza.posYant,cabeza.posXant,false);
+    lc.setLed(ultimaMatriz,ultimaPosY,ultimaPosX,false);
   }else{
     if (snakeCrecio){
       snakeCrecio = false; //Se vuelve a colocar en false para el próximo movimiento
@@ -226,7 +264,6 @@ void mover(){
 
 //Crea nuevos sectores después de encontrar comida
 void crearSector(int posicion){
-  Serial.println("Creando sector");
   snake nSector;
   snake vacio;
   /*
@@ -241,7 +278,11 @@ void crearSector(int posicion){
   nSector.posXant = ultimaPosX;
   nSector.posYant = ultimaPosY;
   nSector.matrizAnt = ultimaMatriz;
-
+  
+  Serial.println("Creando sector");
+  Serial.println(ultimaPosX);
+  Serial.println(ultimaPosY);
+  Serial.println("----------------");
   /*
   nSector1.creado = true;
   nSector1.posX = 1;
@@ -291,10 +332,10 @@ void generateFood() {
     lc.setLed(food.matriz,food.row, food.col,true);
 
 
-  Serial.println(food.row);
-  Serial.println(food.col);
-  Serial.println(food.matriz);
-  Serial.println("------------------------");
+  //Serial.println(food.row);
+  //Serial.println(food.col);
+  //Serial.println(food.matriz);
+  //Serial.println("------------------------");
 
     //AQUI PUEDE IR EL +1 AL PUNTEO
     
@@ -303,10 +344,10 @@ void generateFood() {
         food.col = -1;
         food.row = -1;
         puntos+=1;
-        Serial.print(">>>puntos:");
-        Serial.print(puntos);
-        Serial.println();
-        snakeCrecio = true;
+        //Serial.print(">>>puntos:");
+        //Serial.print(puntos);
+        //Serial.println();
+        //snakeCrecio = true;
     }
 
   

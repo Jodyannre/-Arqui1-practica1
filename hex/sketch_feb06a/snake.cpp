@@ -10,7 +10,6 @@ snake::snake(){
     this->creado = false;
     this->posXant = 0;
     this->posYant = 0;
-    this->tamano = 1;
 }
 
 snake::~snake(){
