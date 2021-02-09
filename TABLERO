@@ -1,0 +1,139 @@
+
+#include <MD_Parola.h>
+#include <MD_MAX72xx.h>
+#include <SPI.h>
+
+//# DE PIN PARA CADA BOTON
+const int btnIn1 = 2;
+const int btnIn2 = 1;
+const int btnIn3 = 0;
+//ESTADO INICIAL DE LOS BOTONES
+int btnIn1State = 0;
+int btnIn2State = 0;
+int btnIn3State = 0;
+
+
+// Define the number of devices we have in the chain and the hardware interface
+// NOTE: These pin numbers will probably not work with your hardware and may
+// need to be adapted
+#define	MAX_DEVICES	2
+#define CLK_PIN  52
+#define DATA_PIN 51
+#define CS_PIN   45
+
+// HARDWARE SPI
+MD_Parola P = MD_Parola(CS_PIN, MAX_DEVICES);
+// SOFTWARE SPI
+//MD_Parola P = MD_Parola(DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+
+
+
+
+uint8_t	frameDelay;	//VELOCIDAD DE SCROLL
+
+// Global message buffers shared by Serial and Scrolling functions
+#define	BUF_SIZE	80
+uint16_t WAIT_TIME;
+char curMessage[BUF_SIZE];
+char newMessage[BUF_SIZE];
+bool newMessageAvailable = false;
+
+
+void setup()
+{
+  //DEFINICION DE LOS BOTONES COMO ENTRADA EN PINES
+  pinMode(btnIn1, INPUT);
+  pinMode(btnIn2, INPUT);
+  pinMode(btnIn3, INPUT);
+  P.begin();
+  P.displayClear();
+  P.displaySuspend(false);
+}
+
+void loop()
+{
+  //se lee el estado de los botones
+  int btnIn1State = digitalRead(btnIn1);
+  int btnIn2State = digitalRead(btnIn2);
+  int btnIn3State = digitalRead(btnIn3);
+  Velocidad();//metodo para revisar velocidad cada vez que empieza mensaje
+  if (P.displayAnimate())
+  {
+    //si esta en 0 bt1 es movimiento
+    if (btnIn1State == LOW)
+    {
+      //si esta en 0 bt2 derecha a izquierda
+      if (btnIn2State == HIGH)
+      {
+        P.displayScroll(curMessage, PA_LEFT, PA_SCROLL_LEFT, frameDelay); //movimiento hacia la izquierda
+        strcpy(curMessage, "TP1 - GRUPO 12 - SECCION A*");
+      }
+      else
+      {
+        P.displayScroll(curMessage, PA_LEFT, PA_SCROLL_RIGHT, frameDelay); //movimiento hacia la dereacha
+        strcpy(curMessage, "TP1 - GRUPO 12 - SECCION A*");
+      }
+    }
+    else
+    {
+      ImprimirLetraPorLetra(); //para movimiento estatico
+    }
+    P.displayReset();
+  }
+}
+
+void ImprimirLetraPorLetra() {
+  P.print("T    ");
+  delay(WAIT_TIME);
+  P.print("P    ");
+  delay(WAIT_TIME);
+  P.print("1    ");
+  delay(WAIT_TIME);
+  P.print("-    ");
+  delay(WAIT_TIME);
+  P.print("G    ");
+  delay(WAIT_TIME);
+  P.print("R    ");
+  delay(WAIT_TIME);
+  P.print("U    ");
+  delay(WAIT_TIME);
+  P.print("P    ");
+  delay(WAIT_TIME);
+  P.print("O    ");
+  delay(WAIT_TIME);
+  P.print("1    ");
+  delay(WAIT_TIME);
+  P.print("2    ");
+  delay(WAIT_TIME);
+  P.print("-    ");
+  delay(WAIT_TIME);
+  P.print("S    ");
+  delay(WAIT_TIME);
+  P.print("E    ");
+  delay(WAIT_TIME);
+  P.print("C    ");
+  delay(WAIT_TIME);
+  P.print("C    ");
+  delay(WAIT_TIME);
+  P.print("I    ");
+  delay(WAIT_TIME);
+  P.print("O    ");
+  delay(WAIT_TIME);
+  P.print("N    ");
+  delay(WAIT_TIME);
+  P.print("A    ");
+  delay(WAIT_TIME);
+  P.print("*    ");
+  delay(WAIT_TIME);
+}
+
+void Velocidad() {
+  if (digitalRead(btnIn3) == HIGH) {
+    frameDelay = 30;
+    WAIT_TIME = 300;
+  }
+  else {
+    frameDelay = 80;
+    WAIT_TIME = 700;
+  }
+}
